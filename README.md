@@ -1,3 +1,46 @@
+# Unboxed Edits
+
+Let's clone and extract the package into a new directory `lib`:
+```bash
+git clone https://github.com/solana-mobile/mobile-wallet-adapter.git
+mkdir lib
+cp -rf mobile-wallet-adapter/js/packages/mobile-wallet-adapter-walletlib ./lib
+rm -rf mobile-wallet-adapter
+```
+
+Now we have to make some slight edits for our app to compile and resolve the new package.
+
+First, in `android/build.gradle`, change the `minSdkVersion` to version `23`.
+```gradle
+  minSdkVersion = 23
+```
+
+In `lib/mobile-wallet-adapter-walletlib/src/index.ts` remove all `.js` from the end of the exports.
+```ts
+export * from './mwaSessionEvents';
+export * from './resolve';
+export * from './useMobileWalletAdapterSession';
+export * from './useDigitalAssetLinks';
+```
+
+In `lib/mobile-wallet-adapter-walletlib/src/useMobileWalletAdapterSession.ts` remove the `.js` from the following imports:
+```ts
+import { MWASessionEvent, MWASessionEventType } from './mwaSessionEvents';
+import { MWARequest, MWARequestType } from './resolve';
+```
+
+In `lib/mobile-wallet-adapter-walletlib\android\src\main\java\com\solanamobile\mobilewalletadapterwalletlib\reactnative\MobileWalletAdapterBottomSheetActivity.kt` comment out the `protected fun isConcurrentRootEnabled() = false` line at the very bottom.
+```kt
+// override protected fun isConcurrentRootEnabled() = false
+```
+
+Lastly, add `@solana-mobile/mobile-wallet-adapter-walletlib` to our `package.json` dependancies with the filepath as the resolution:
+```json
+"dependencies": {
+    "@solana-mobile/mobile-wallet-adapter-walletlib": "file:./lib/mobile-wallet-adapter-walletlib",
+}
+```
+
 # `@solana-mobile/mobile-wallet-adapter-walletlib`
 
 This is a package that provides React Native bridge for the native `mobile-wallet-adapter-walletlib` library and it is designed for *Wallet apps* built in React Native. It provides an API to implement the wallet endpoint of the [mobile wallet adapter protocol](https://github.com/solana-mobile/mobile-wallet-adapter/blob/main/spec/spec.md).
